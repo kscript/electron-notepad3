@@ -1,12 +1,12 @@
 {
   "name": "electron-notepad3",
-  "version": "0.0.9",
+  "version": "0.5.0",
   "author": "kscript <1258@live.cn>",
   "description": "An electron-vue project",
-  "license": null,
+  "license": "Apache",
   "main": "./dist/electron/main.js",
   "scripts": {
-    "build": "node .electron-vue/build.js && electron-builder",
+    "build": "node .electron-vue/build.js && electron-builder && node .electron-vue/append",
     "build:dir": "node .electron-vue/build.js && electron-builder --dir",
     "build:clean": "cross-env BUILD_TARGET=clean node .electron-vue/build.js",
     "build:web": "cross-env BUILD_TARGET=web node .electron-vue/build.js",
@@ -27,10 +27,22 @@
     "directories": {
       "output": "build"
     },
-    "publish": {
-      "provider": "generic",
-      "url": "http://web.cn/autoupdate/"
-    },
+    "publish": [
+      {
+        "provider": "generic",
+        "url": "http://web.cn/autoupdate/"
+      },
+      {
+        "provider": "github",
+        "owner": "kscript",
+        "host": "api.github.com",
+        "repo": "electron-notepad3",
+        "token": "6767d8933c4490fdcbb95971f28331a23ef779b4",
+        "vPrefixedTagName": false,
+        "releaseType": "release",
+        "publishAutoUpdate": true
+      }
+    ],
     "files": [
       "dist/electron/**/*"
     ],
@@ -60,13 +72,16 @@
       ]
     },
     "mac": {
-      "icon": "build/icons/icon.icns"
+      "icon": "dist/icons/icon.icns",
+      "artifactName": "${productName}.setup.${version}.${ext}"
     },
     "win": {
-      "icon": "build/icons/icon.ico"
+      "icon": "dist/icons/icon.ico",
+      "artifactName": "${productName}.setup.${version}.${ext}"
     },
     "linux": {
-      "icon": "build/icons"
+      "icon": "dist/icons",
+      "artifactName": "${productName}.setup.${version}.${ext}"
     }
   },
   "dependencies": {

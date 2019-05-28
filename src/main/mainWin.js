@@ -1,7 +1,6 @@
 'use strict'
-import { autoUpdater } from 'electron-updater'
 import { updateHandle } from './update'
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow } from 'electron'
 
 let mainWindow
 const winURL = process.env.NODE_ENV === 'development' ? `http://localhost:9080` : `file://${__dirname}/index.html`
@@ -30,23 +29,8 @@ export const createWindow = () => {
     // enableLargerThanScreen: true, // mac
     // hasShadow: false
   })
-  // mainWindow.webContents.openDevTools({mode: 'detach'})
-  // removeDevToolsExtension(name)
-  // BrowserWindow.addDevToolsExtension(path.join(__dirname, '../renderer/assets/vue-devtools'))
-  // ipcMain.on('devtools', () => {
-  //   console.log(BrowserWindow.getExtensions())
-  // })
-  ipcMain.on('mainCapturePage', event => {
-    let size = mainWindow.getContentBounds()
-    size.x = 0
-    size.y = 0
-    mainWindow.capturePage(size, image => {
-      event.sender.send('renderCapturePage', [image.toDataURL()])
-    })
-  })
   mainWindow.loadURL(winURL)
   updateHandle(mainWindow)
-
   mainWindow.on('closed', () => {
     mainWindow = null
   })
@@ -75,15 +59,7 @@ export const mainInit = () => {
     // autoUpdater.checkForUpdates()
     // }
   })
-  ipcMain.on('updateNow', (e, arg) => {
-    autoUpdater.quitAndInstall()
-  })
-  ipcMain.on('checkForUpdate', () => {
-    // 执行自动更新检查
-    autoUpdater.checkForUpdates()
-  })
 }
-
 export default {
   mainInit,
   createWindow

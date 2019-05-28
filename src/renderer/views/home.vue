@@ -7,7 +7,6 @@ export default {
     return {}
   },
   moutend () {
-    window.app = this
   }
 }
 </script>
