@@ -184,6 +184,9 @@ export default {
         outline: none;
       }
     }
+    .tree-wholerow-ul{
+      width: 100%;
+    }
     .tree-children {
       transition-duration: 0ms!important;
     }

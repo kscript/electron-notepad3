@@ -340,6 +340,13 @@ export default {
       }
       this.elmX = this.left
       this.elmY = this.top
+    },
+    reInit(){
+      this.$nextTick(() => {
+        let eventDown = document.createEvent("MouseEvents")
+        eventDown.initMouseEvent("mousedown",true,true,window,0, 0,0,0,0,false,false,false,false,0,null); 
+        this.$refs.vdr.dispatchEvent(eventDown)
+      });
     }
   },
   watch: {
@@ -369,7 +376,7 @@ export default {
     }
   },
   mounted(){
-    this.$refs.vdr.click();
+    this.reInit();
   }
 }
 /* eslint-enable */

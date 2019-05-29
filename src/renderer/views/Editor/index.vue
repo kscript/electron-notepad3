@@ -2,7 +2,7 @@
   <div class="editor-box f100">
     <div class="flex f100">
       <div class="scroll">
-        <tree
+        <v-tree
           ref="tree"
           :data="treeData"
           :asideW="asideW"
@@ -11,7 +11,7 @@
           @treeItemClick="treeItemClick"
           @viewmodeChange="viewmodeChange"
         >
-        </tree>
+        </v-tree>
       </div>
       <div class="scroll" style="overflow-x: auto;">
         <v-deformation
@@ -25,35 +25,51 @@
           size="w"
           axis="x"
           @resizing="onResizing">
-          <div class="name-list ellipsis" v-if="files.length > 0">
-            <draggable class="list-group" element="ul" v-model="files" :options="draggableOptions">
-                <li class="list-group-item" v-for="(vo, index) in files" :key="index">
-                  <div class="label" :class="{'active': currentPath === vo.path}" @click="clickTab(vo)" :title="vo.text">
-                    <cite>
-                      <i class="icon-file handler-icon">&nbsp;</i>
-                      {{vo.text}}
-                      <i class="icon-close" @click.prevent.stop="closeTab(index)">&nbsp;</i>
-                    </cite>
-                  </div>
-                </li>
-            </draggable>
-          </div>
-          <template v-if="viewmode === 'bigEditor' || viewmode === 'bigMarkdown'">
-            <div class="tips">
-              <div class="bd">
-                打开大文件会对编辑器的运行造成一定的影响, 暂不支持对大文件的查看/编辑
-              </div>
-              <div class="ft">
-                <!-- <el-button size="mini" type="info" @click="openBigFile">打开</el-button> -->
-              </div>
+            <div class="name-list ellipsis" v-if="files.length > 0">
+              <v-draggable class="list-group" element="ul" v-model="files" :options="draggableOptions">
+                  <li class="list-group-item" v-for="(vo, index) in files" :key="index">
+                    <div class="label" :class="{'active': currentPath === vo.path}" @click="clickTab(vo)" :title="vo.text">
+                      <cite>
+                        <i class="icon-file handler-icon">&nbsp;</i>
+                        {{vo.text}}
+                        <i class="icon-close" @click.prevent.stop="closeTab(index)">&nbsp;</i>
+                      </cite>
+                    </div>
+                  </li>
+              </v-draggable>
             </div>
-          </template>
-          <template v-else-if="viewmode === 'editor'">
-            <codemirror ref="codemirror" class="f100 scroll" :value="content" :options="editorConfig" @input="editChanges"></codemirror>
-          </template>
-          <template v-else-if="viewmode === 'markdown'">
-            <v-vuemarkdown ref="markdown" class="md-editor-preview markdown-body f100 scroll" @rendered="rendered">{{content}}</v-vuemarkdown>
-          </template>
+            <template v-if="viewmode === 'bigEditor' || viewmode === 'bigMarkdown'">
+              <div class="tips">
+                <div class="bd">
+                  打开大文件会对编辑器的运行造成一定的影响, 暂不支持对大文件的查看/编辑
+                </div>
+                <div class="ft">
+                  <!-- <el-button size="mini" type="info" @click="openBigFile">打开</el-button> -->
+                </div>
+              </div>
+            </template>
+            <template v-else-if="viewmode === 'editor'">
+              <codemirror ref="codemirror" class="f100 scroll" :value="content" :options="editorConfig" @input="editChanges"></codemirror>
+            </template>
+            <template v-else-if="viewmode === 'markdown'">
+              <v-vuemarkdown ref="markdown" class="md-editor-preview markdown-body f100 scroll" @rendered="rendered">{{content}}</v-vuemarkdown>
+            </template>
+        </v-deformation>
+        <v-deformation
+          class="terminal-box fl1"
+          :class="{movedown: files.length > 0}"
+          :x="asideW + 5"
+          :draggable="3"
+          :resizable="3"
+          :showHandler="false"
+          :move="true"
+          size="w"
+          axis="x"
+          :h="200"
+          v-show="terminalShow"
+          ref="terminal"
+          @resizing="onTerminalResizing">
+          <v-terminal></v-terminal>
         </v-deformation>
       </div>
     </div>
@@ -65,6 +81,7 @@ import 'github-markdown-css'
 import VueMarkdown from 'vue-markdown'
 import deformation from '../../components/deformation.vue'
 import tree from './tree.vue'
+import terminal from './terminal.vue'
 require('codemirror/mode/javascript/javascript')
 require('codemirror/mode/vue/vue')
 require('codemirror/addon/hint/show-hint.js')
@@ -80,6 +97,7 @@ export default {
       deformationPopup: null,
       content: '',
       asideW: 240,
+      terminalH: 0,
       editorConfig: {
         mode: 'javascript',
         lineNumbers: true,
@@ -98,16 +116,21 @@ export default {
       current: {},
       nextId: 0,
       data: [],
-      treeData: []
+      treeData: [],
+      terminalShow: false
     }
   },
   components: {
-    draggable,
-    tree,
+    'v-tree': tree,
+    'v-terminal': terminal,
+    'v-draggable': draggable,
     'v-vuemarkdown': VueMarkdown,
     'v-deformation': deformation
   },
   methods: {
+    onTerminalResizing (left, top, width, height) {
+      this.terminalH = height
+    },
     // 打开markdown里的链接时, 会离开编辑器环境, 拦截一下
     rendered () {
       this.$nextTick(() => {
@@ -405,10 +428,33 @@ export default {
     this.$bus.$off('refreshDir').$on('refreshDir', (node, item) => {
       this.openFile(item, this.viewmode, true)
     })
+    this.$bus.$off('toggleTerminal').$on('toggleTerminal', (node, item) => {
+      this.terminalShow = !this.terminalShow
+      this.terminalShow && this.$refs.terminal.reInit()
+    })
   }
 }
 </script>
 <style lang="scss">
+// .flex-column{
+//   flex-direction: column;
+// }
+// .fl1{
+//   flex: 1;
+// }
+.terminal-box{
+  position: absolute;
+  top: auto!important;
+  bottom: 0;
+  right: 0;
+  z-index: 999;
+  width: auto!important;
+  outline: none;
+  border-top: 1px solid #3f3f3f;
+  border-left: 1px solid #3f3f3f;
+  background-color: #111;
+  cursor: auto!important;
+}
 .editor-box {
   .name-list{
     height: 24px;

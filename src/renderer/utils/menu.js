@@ -99,6 +99,18 @@ export const editorMenu = function () {
         { role: 'minimize', label: '最小化' },
         { role: 'togglefullscreen', label: '全屏' }
       ]
+    },
+    {
+      label: '调试',
+      submenu: [
+        {
+          label: '终端',
+          accelerator: 'CommandOrControl + T',
+          click () {
+            Bus.$emit('toggleTerminal')
+          }
+        }
+      ]
     }
   ]
   template = template.concat(common)
