@@ -1,62 +1,63 @@
 <template>
-    <div class="editor-box f100">
-      <div class="flex f100">
-        <div class="scroll">
-          <tree
-           ref="tree"
-           :data="treeData"
-           :asideW="asideW"
-           @editFileName="editFileName"
-           @treeItemClick="treeItemClick"
-           @viewmodeChange="viewmodeChange"
-          >
-          </tree>
-        </div>
-        <div class="scroll" style="overflow-x: auto;">
-          <v-deformation
-            class="editor-el"
-            :class="{movedown: files.length > 0}"
-            :x="asideW + 5"
-            :draggable="2"
-            :resizable="2"
-            :showHandler="false"
-            :move="true"
-            size="w"
-            axis="x"
-            @resizing="onResizing">
-            <div class="name-list ellipsis" v-if="files.length > 0">
-              <draggable class="list-group" element="ul" v-model="files" :options="draggableOptions">
-                  <li class="list-group-item" v-for="(vo, index) in files" :key="index">
-                    <div class="label" :class="{'active': currentPath === vo.path}" @click="clickTab(vo)" :title="vo.text">
-                      <cite>
-                        <i class="icon-file handler-icon">&nbsp;</i>
-                        {{vo.text}}
-                        <i class="icon-close" @click.prevent.stop="closeTab(index)">&nbsp;</i>
-                      </cite>
-                    </div>
-                  </li>
-              </draggable>
-            </div>
-            <template v-if="viewmode === 'bigEditor' || viewmode === 'bigMarkdown'">
-              <div class="tips">
-                <div class="bd">
-                  打开大文件会对编辑器的运行造成一定的影响, 暂不支持对大文件的查看/编辑
-                </div>
-                <div class="ft">
-                  <!-- <el-button size="mini" type="info" @click="openBigFile">打开</el-button> -->
-                </div>
+  <div class="editor-box f100">
+    <div class="flex f100">
+      <div class="scroll">
+        <tree
+          ref="tree"
+          :data="treeData"
+          :asideW="asideW"
+          @editFileName="editFileName"
+          @treeItemDel="treeItemDel"
+          @treeItemClick="treeItemClick"
+          @viewmodeChange="viewmodeChange"
+        >
+        </tree>
+      </div>
+      <div class="scroll" style="overflow-x: auto;">
+        <v-deformation
+          class="editor-el"
+          :class="{movedown: files.length > 0}"
+          :x="asideW + 5"
+          :draggable="2"
+          :resizable="2"
+          :showHandler="false"
+          :move="true"
+          size="w"
+          axis="x"
+          @resizing="onResizing">
+          <div class="name-list ellipsis" v-if="files.length > 0">
+            <draggable class="list-group" element="ul" v-model="files" :options="draggableOptions">
+                <li class="list-group-item" v-for="(vo, index) in files" :key="index">
+                  <div class="label" :class="{'active': currentPath === vo.path}" @click="clickTab(vo)" :title="vo.text">
+                    <cite>
+                      <i class="icon-file handler-icon">&nbsp;</i>
+                      {{vo.text}}
+                      <i class="icon-close" @click.prevent.stop="closeTab(index)">&nbsp;</i>
+                    </cite>
+                  </div>
+                </li>
+            </draggable>
+          </div>
+          <template v-if="viewmode === 'bigEditor' || viewmode === 'bigMarkdown'">
+            <div class="tips">
+              <div class="bd">
+                打开大文件会对编辑器的运行造成一定的影响, 暂不支持对大文件的查看/编辑
               </div>
-            </template>
-            <template v-else-if="viewmode === 'editor'">
-              <codemirror ref="codemirror" class="f100 scroll" :value="content" :options="editorConfig" @input="editChanges"></codemirror>
-            </template>
-            <template v-else-if="viewmode === 'markdown'">
-              <v-vuemarkdown ref="markdown" class="md-editor-preview markdown-body f100 scroll" @rendered="rendered">{{content}}</v-vuemarkdown>
-            </template>
-          </v-deformation>
-        </div>
+              <div class="ft">
+                <!-- <el-button size="mini" type="info" @click="openBigFile">打开</el-button> -->
+              </div>
+            </div>
+          </template>
+          <template v-else-if="viewmode === 'editor'">
+            <codemirror ref="codemirror" class="f100 scroll" :value="content" :options="editorConfig" @input="editChanges"></codemirror>
+          </template>
+          <template v-else-if="viewmode === 'markdown'">
+            <v-vuemarkdown ref="markdown" class="md-editor-preview markdown-body f100 scroll" @rendered="rendered">{{content}}</v-vuemarkdown>
+          </template>
+        </v-deformation>
       </div>
     </div>
+  </div>
 </template>
 <script>
 import draggable from 'vuedraggable'
@@ -145,9 +146,9 @@ export default {
                     path: path,
                     text: path,
                     type: 'file',
-                    pushed: 0,
-                    opened: 0,
-                    selected: 0,
+                    pushed: !!0,
+                    opened: !!0,
+                    selected: !!0,
                     viewmode: this.viewmode
                   }
                   this.$set(this.storeTree, path, node)
@@ -217,7 +218,7 @@ export default {
         }
       }
       let node = this.pathMap[this.files[index].path]
-      node.pushed = 0
+      node.pushed = !!0
       this.files.splice(index, 1)
     },
     editChanges (val) {
@@ -226,16 +227,22 @@ export default {
     onResizing (left, top, width, height) {
       this.asideW = left
     },
-    treeItemClick (node, item) {
+    async treeItemDel (node, item) {
+      let path = item.path
+      this.tool.file.delfile(item, () => {
+        this.$set(node.$parent.data, 'children', node.$parent.data.children.filter(item => {
+          return path !== item.path
+        }))
+      })
+    },
+    async treeItemClick (node, item) {
       if (item.input !== 1) {
-        this.openFile(item, 'editor')
-        item.viewmode = 'editor'
+        return this.openFile(item, 'editor')
       }
     },
-    openFile (node, mode) {
-      node.opened = !node.opened
+    async openFile (node, mode, refresh) {
+      node.opened = refresh ? !!1 : !node.opened
       return new Promise((resolve, reject) => {
-        let res
         let stats
         if (node.type === 'file') {
           if (!node.stats) {
@@ -248,11 +255,11 @@ export default {
             this.viewmode = mode = 'big' + this.viewmode.replace(/./, m => {
               return m.toUpperCase()
             })
-            resolve(res)
+            resolve()
           } else {
             if (!node.pushed) {
               this.pathMap[node.path] = node
-              this.$set(node, 'pushed', 1)
+              this.$set(node, 'pushed', !!1)
               this.files.push(node)
             }
             this.currentPath = node.path
@@ -263,8 +270,8 @@ export default {
                 // this.$store.commit('SET_FILE', data)
                 this.content = data
                 // console.log(data)
-                node.opened = node.opened ? 0 : 1
-                resolve(res)
+                node.opened = !node.opened
+                resolve()
               } else {
                 console.log(err)
                 reject(err)
@@ -272,14 +279,16 @@ export default {
             })
           }
         } else {
-          if (node.opened) {
-            this.$set(node, 'loading', true)
+          if (!node.children || node.children.length === 0 || refresh) {
+            // this.$set(node, 'loading', true)
             this.tool.file.fileDisplay(node.path).then(tree => {
-              this.$set(node, 'loading', false)
+              // this.$set(node, 'loading', false)
               this.$set(node, 'children', tree.children || tree)
+              resolve()
             })
+          } else {
+            resolve()
           }
-          resolve(res)
         }
       }).then(() => {
         this.viewmode = mode || 'editor'
@@ -287,12 +296,29 @@ export default {
     }
   },
   mounted () {
-    // let treeData = this.$store.getters.dir ? [this.$store.getters.dir] : []
     this.treeData = this.$store.getters.dir ? [this.$store.getters.dir] : []
-    console.log(this)
-    this.$bus.$off('newPath').$on('newPath', path => {
-      path && this.tool.file.mkdir(path, () => {
+    this.$bus.$off('newDir').$on('newDir', (node, item, done) => {
+      this.treeItemClick(node, item).then(() => {
+        item.children.unshift({
+          type: 'dir',
+          path: this.tool.path.join(item.path, '新建文件夹'),
+          // pos: stats.name,
+          text: '新建文件夹',
+          // ext: '',
+          stats: {
+            size: 0
+          },
+          children: [],
+          mock: !!1,
+          pushed: !!0,
+          opened: !!0,
+          selected: !!0
+        })
+        done()
       })
+      // this.tool.file.mkdir(path, function () {
+
+      // })
     })
     this.$bus.$off('setDir').$on('setDir', () => {
       let path = this.tool.file.openDirectory(['openDirectory'])
@@ -319,8 +345,8 @@ export default {
               path: path,
               text: path,
               type: 'file',
-              pushed: 1,
-              selected: 0
+              pushed: !!1,
+              selected: !!0
             }
             this.files.push(node)
             this.pathMap[path] = node
@@ -334,9 +360,9 @@ export default {
         path: path || 'Untitled-' + this.newFileNum,
         text: 'Untitled-' + this.newFileNum++,
         type: 'file',
-        newFile: 1,
-        pushed: 1,
-        selected: 0
+        newFile: !!1,
+        pushed: !!1,
+        selected: !!0
       }
       this.content = ''
       this.currentPath = newFile.path
@@ -347,7 +373,7 @@ export default {
       let text = this.content
       let path = this.currentPath
       let node = this.pathMap[path]
-      if (node.newFile === 1) {
+      if (node.newFile) {
         this.$bus.$emit('saveAsFile', path)
       } else {
         text = text.replace(/\n/g, '\r\n')
@@ -365,8 +391,9 @@ export default {
           this.tool.file.saveFile(filename, text, () => {
             if (path) {
               let node = this.pathMap[path]
+              let info = this.tool.path.parse(filename)
               node.path = filename
-              node.text = filename
+              node.text = info.name
               node.newFile = 2
               this.pathMap[filename] = node
               delete this.pathMap[path]
@@ -374,6 +401,9 @@ export default {
           })
         }
       })
+    })
+    this.$bus.$off('refreshDir').$on('refreshDir', (node, item) => {
+      this.openFile(item, this.viewmode, true)
     })
   }
 }

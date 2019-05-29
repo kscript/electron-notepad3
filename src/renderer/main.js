@@ -8,6 +8,7 @@ import router from './router'
 import store from './store'
 import { eventBus } from './utils/eventBus'
 import { electron } from './utils/electron'
+import menu from './utils/menu'
 import { copy } from './utils'
 import file from './utils/file'
 import './assets/scss/global.scss'
@@ -17,6 +18,7 @@ import 'element-ui/lib/theme-chalk/index.css'
 if (!process.env.IS_WEB) Vue.use(require('vue-electron'))
 Vue.prototype.tool = {
   electron,
+  menu,
   file,
   path,
   copy

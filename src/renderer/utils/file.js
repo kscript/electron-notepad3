@@ -36,6 +36,22 @@ export const mkdir = function (path, mode, then) {
   return fs.mkdir(path, mode, then)
 }
 
+export const delfile = (item, then) => {
+  if (item.type === 'file') {
+    fs.unlinkSync(item.path)
+  } else {
+    item.children.forEach((file, index) => {
+      if (file.type === 'dir') {
+        delfile(file)
+      } else {
+        fs.unlinkSync(file.path)
+      }
+    })
+    fs.rmdirSync(item.path)
+  }
+  then && then()
+}
+
 export const fileDisplay = (filePath, deep) => {
   return new Promise((resolve, reject) => {
     let index = [filePath.lastIndexOf('\\'), filePath.lastIndexOf('/')]
@@ -44,16 +60,17 @@ export const fileDisplay = (filePath, deep) => {
     let dirs = []
     let tree = {
       type: 'dir',
-      pos: filePath,
+      // pos: filePath,
       text: names || filePath,
-      opened: 1,
+      opened: !!1,
       path: filePath,
       children: []
     }
     fileLoader({
       path: filePath,
+      include: /[\s\S]+/,
       // 文件扩展名, 支持正则
-      ext: /.*/,
+      // ext: /.*/,
       // 是否深层遍历
       deep: false,
       // 是否读取文件内容
@@ -84,27 +101,27 @@ export const fileDisplay = (filePath, deep) => {
               size: stats.size
             },
             // 是否加入到文件tab
-            pushed: 0,
+            pushed: !!0,
             // vue-jstree中的属性
-            opened: 0,
-            selected: 0
+            opened: !!0,
+            selected: !!0
           })
         }
         if (stats.type === 'dir') {
-          if (ignore.indexOf(stats.name) < 0) {
+          if (1 || ignore.indexOf(stats.name) < 0) {
             dirs.push({
               type: 'dir',
               path: Path.join(filePath, stats.name),
-              pos: stats.name,
+              // pos: stats.name,
               text: stats.name,
               // ext: '',
               stats: {
                 size: stats.size
               },
               children: [],
-              pushed: 0,
-              opened: 0,
-              selected: 0
+              pushed: !!0,
+              opened: !!0,
+              selected: !!0
             })
           }
         }
@@ -113,7 +130,7 @@ export const fileDisplay = (filePath, deep) => {
       // 转换完毕
       done () {
         tree.children = dirs.concat(files)
-        console.log(filePath, tree)
+        // console.log(filePath, tree)
         resolve(tree)
       }
     })
@@ -124,6 +141,7 @@ export const getStats = function (path) {
 }
 export default {
   fs,
+  delfile,
   dialog,
   selectFile,
   openFile,

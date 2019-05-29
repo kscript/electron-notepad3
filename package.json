@@ -1,12 +1,13 @@
 {
   "name": "electron-notepad3",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "author": "kscript <1258@live.cn>",
   "description": "An electron-vue project",
   "license": "Apache",
   "main": "./dist/electron/main.js",
+  "home": "https://github.com/kscript/",
   "scripts": {
-    "build": "node .electron-vue/build.js && electron-builder && node .electron-vue/append",
+    "build": "node .electron-vue/preappend && node .electron-vue/build.js && electron-builder && node .electron-vue/append",
     "build:dir": "node .electron-vue/build.js && electron-builder --dir",
     "build:clean": "cross-env BUILD_TARGET=clean node .electron-vue/build.js",
     "build:web": "cross-env BUILD_TARGET=web node .electron-vue/build.js",
@@ -83,6 +84,13 @@
       "icon": "dist/icons",
       "artifactName": "${productName}.setup.${version}.${ext}"
     }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kscript/electron-notepad3.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kscript/electron-notepad3/issues"
   },
   "dependencies": {
     "vue": "^2.5.16",

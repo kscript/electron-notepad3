@@ -12,7 +12,7 @@
         <i :class="vo.vm.themeIconClasses" role="presentation" v-if="!vo.model.loading"></i>
         <span v-html="vo.model.text" v-if="!vo.model.input"></span>
         <template v-else>
-          <input v-model="editInputVal" ref="renameInput" @keyup.13="editFileName(vo.model, vo)" @blur="editFileName(vo.model, vo)"/>
+          <input v-model="editInputVal" ref="renameInput" @keyup="editFileNameByKey($event, vo.model, vo)" @blur="editFileName(vo.model, vo)"/>
         </template>
       </template>
     </v-jstree>
@@ -54,9 +54,18 @@ export default {
     itemClick (node, item) {
       this.$emit('treeItemClick', node, item)
     },
+    editFileNameByKey ($event, data, vo) {
+      if ($event.keyCode === 27) {
+        this.$set(data, 'input', !!0)
+      }
+      if ($event.keyCode === 13) {
+        this.$set(data, 'input', !!0)
+        this.editFileName(data, vo)
+      }
+    },
     // 确认修改文件
     editFileName (data) {
-      this.$set(data, 'input', 0)
+      this.$set(data, 'input', !!0)
       if (this.editInputVal && this.editInputVal !== data.text) {
         this.$set(data, 'text', this.editInputVal)
         this.$bus.$emit('rename', data)
@@ -65,44 +74,64 @@ export default {
     inputfocus () {
       this.$refs.renameInput && this.$refs.renameInput.focus()
     },
-    treeContextmenu (node, data, $event) {
+    treeContextmenu (node, item, $event) {
       let Menu = this.tool.menu.Menu
       let MenuItem = this.tool.menu.MenuItem
       let remote = this.tool.menu.remote
 
       let menu = new Menu()
-      let finfo = this.tool.path.parse(data.path)
+      let finfo = this.tool.path.parse(item.path)
       // this.$store.getters
       menu.append(new MenuItem({
-        label: '重命名',
+        label: '刷新',
         click: () => {
-          this.renameClick(data)
+          this.$bus.$emit('refreshDir', node, item)
         }
       }))
-      if (data.type === 'file') {
+      if (item.type === 'file') {
         if (finfo.ext === '.md') {
           menu.append(new MenuItem({
             label: 'markdown文件预览',
             click: () => {
-              data.viewmode = 'markdown'
-              this.$emit('viewmodeChange', data, 'markdown')
+              item.viewmode = 'markdown'
+              this.$emit('viewmodeChange', item, 'markdown')
             }
           }))
         }
-      } else if (data.type === 'dir') {
+      } else if (item.type === 'dir') {
         menu.append(new MenuItem({
           label: '新建文件',
           click: () => {
-            this.$bus.$emit('newFile', data.path)
+            this.$bus.$emit('newFile', item.path)
           }
         }))
         menu.append(new MenuItem({
           label: '添加文件夹',
           click: () => {
-            this.$bus.$emit('newPath', data.path)
+            this.$bus.$emit('newDir', node, item, () => {
+              this.renameClick(item.children[0])
+            })
           }
         }))
       }
+      menu.append(new MenuItem({
+        label: '重命名',
+        click: () => {
+          this.renameClick(item)
+        }
+      }))
+      menu.append(new MenuItem({
+        label: '删除',
+        click: () => {
+          this.$emit('treeItemDel', node, item)
+        }
+      }))
+      menu.append(new MenuItem({
+        label: '在资源管理器中显示',
+        click: () => {
+          this.tool.electron.shell.openExternal(item.path)
+        }
+      }))
       menu.popup({
         window: remote.getCurrentWindow()
       })
@@ -127,6 +156,16 @@ export default {
                   this.$emit('editFileName', oldPath, newPath, file)
                 }
               })
+            } else if (file.type === 'dir') {
+              this.tool.file.mkdir(newPath, error => {
+                if (error) {
+                  console.log(error)
+                } else {
+                  file.text = value
+                  file.path = newPath
+                  this.$emit('editFileName', oldPath, newPath, file)
+                }
+              })
             }
           }
         }
@@ -136,7 +175,8 @@ export default {
 }
 </script>
 <style lang="scss">
-.tree-box .file-tree {
+.tree-box {
+  .file-tree {
     height: 100%;
     color: #ccc!important;
     .tree-selected{
@@ -144,12 +184,16 @@ export default {
         outline: none;
       }
     }
+    .tree-children {
+      transition-duration: 0ms!important;
+    }
     .tree-wholerow{
       z-index: 0!important;
     }
     .tree-wholerow-hovered{
       background: #3f3f3f!important;
     }
+    // .tree-selected,
     .tree-wholerow-clicked,
     .tree-wholerow-hovered.tree-wholerow-clicked{
       background: #505050!important;
@@ -167,5 +211,6 @@ export default {
       display: inline-block;
     }
   }
+}
 </style>
 
