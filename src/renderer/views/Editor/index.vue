@@ -1,87 +1,90 @@
 <template>
   <div class="editor-box f100">
-    <div class="flex f100">
-      <div class="scroll">
-        <v-tree
-          ref="tree"
-          :data="treeData"
-          :asideW="asideW"
-          @editFileName="editFileName"
-          @treeItemDel="treeItemDel"
-          @treeItemClick="treeItemClick"
-          @viewmodeChange="viewmodeChange"
-        >
-        </v-tree>
-      </div>
-      <div class="scroll" style="overflow-x: auto;">
-        <v-deformation
-          class="editor-el"
-          :class="{movedown: files.length > 0}"
-          :x="asideW + 5"
-          :draggable="2"
-          :resizable="2"
-          :showHandler="false"
-          :move="true"
-          size="w"
-          axis="x"
-          @resizing="onResizing">
-            <div class="name-list ellipsis" v-if="files.length > 0">
-              <v-draggable class="list-group" element="ul" v-model="files" :options="draggableOptions">
-                  <li class="list-group-item" v-for="(vo, index) in files" :key="index">
-                    <div class="label" :class="{'active': currentPath === vo.path}" @click="clickTab(vo)" :title="vo.text">
-                      <cite>
-                        <i class="icon-file handler-icon">&nbsp;</i>
-                        {{vo.text}}
-                        <i class="icon-close" @click.prevent.stop="closeTab(index)">&nbsp;</i>
-                      </cite>
-                    </div>
-                  </li>
-              </v-draggable>
-            </div>
-            <template v-if="viewmode === 'bigEditor' || viewmode === 'bigMarkdown'">
-              <div class="tips">
-                <div class="bd">
-                  打开大文件会对编辑器的运行造成一定的影响, 暂不支持对大文件的查看/编辑
+    <v-tree
+      ref="tree"
+      :data="treeData"
+      :asideW="asideW"
+      @editFileName="editFileName"
+      @treeItemDel="treeItemDel"
+      @treeItemClick="treeItemClick"
+      @viewmodeChange="viewmodeChange"
+    >
+    </v-tree>
+    <v-deformation
+      class="editor-el"
+      :class="{movedown: files.length > 0}"
+      :x="asideW"
+      :draggable="false"
+      :resizable="true"
+      :showHandler="true"
+      move
+      parent
+      size="w"
+      axis="x"
+      @resizing="onResizing">
+        <div class="name-list ellipsis" v-if="files.length > 0">
+          <v-draggable class="list-group" element="ul" v-model="files" :options="draggableOptions">
+              <li class="list-group-item" v-for="(vo, index) in files" :key="index">
+                <div class="label" :class="{'active': currentPath === vo.path}" @click="clickTab(vo)" :title="vo.text">
+                  <cite>
+                    <i class="icon-file handler-icon">&nbsp;</i>
+                    {{vo.text}}
+                    <i class="icon-close" @click.prevent.stop="closeTab(index)">&nbsp;</i>
+                  </cite>
                 </div>
-                <div class="ft">
-                  <!-- <el-button size="mini" type="info" @click="openBigFile">打开</el-button> -->
-                </div>
+              </li>
+          </v-draggable>
+        </div>
+        <div class="editor-context f100" :style="{'padding-bottom': (terminalShow ? terminalH : 0) + 'px', position: 'relative'}">
+          <template v-if="viewmode === 'bigEditor' || viewmode === 'bigMarkdown'">
+            <div class="tips">
+              <div class="bd">
+                打开大文件会对编辑器的运行造成一定的影响, 暂不支持对大文件的查看/编辑
               </div>
-            </template>
-            <template v-else-if="viewmode === 'editor'">
-              <codemirror ref="codemirror" class="f100 scroll" :value="content" :options="editorConfig" @input="editChanges"></codemirror>
-            </template>
-            <template v-else-if="viewmode === 'markdown'">
-              <v-vuemarkdown ref="markdown" class="md-editor-preview markdown-body f100 scroll" @rendered="rendered">{{content}}</v-vuemarkdown>
-            </template>
-        </v-deformation>
-        <v-deformation
-          class="terminal-box fl1"
-          :class="{movedown: files.length > 0}"
-          :x="asideW + 5"
-          :draggable="3"
-          :resizable="3"
-          :showHandler="false"
-          :move="true"
-          size="w"
-          axis="x"
-          :h="200"
-          v-show="terminalShow"
-          ref="terminal"
-          @resizing="onTerminalResizing">
-          <v-terminal></v-terminal>
-        </v-deformation>
-      </div>
-    </div>
+              <div class="ft">
+                <!-- <el-button size="mini" type="info" @click="openBigFile">打开</el-button> -->
+              </div>
+            </div>
+          </template>
+          <template v-else-if="viewmode === 'editor'">
+            <codemirror ref="codemirror" class="f100 scroll" :value="content" :options="editorConfig" @input="editChanges"></codemirror>
+          </template>
+          <template v-else-if="viewmode === 'markdown'">
+            <v-vuemarkdown ref="markdown" class="md-editor-preview markdown-body f100 scroll" @rendered="rendered">{{content}}</v-vuemarkdown>
+          </template>
+          <v-deformation
+            class="terminal-box fl1"
+            :style="{left: 0 + 'px!important'}"
+            :class="{movedown: files.length > 0}"
+            :x="0"
+            :draggable="false"
+            :resizable="true"
+            :showHandler="true"
+            move
+            parent
+            size="w"
+            axis="x"
+            :h="300"
+            :max-height="300"
+            :min-height="100"
+            v-show="terminalShow"
+            ref="terminal"
+            @resizing="onTerminalResizing">
+            <v-terminal></v-terminal>
+          </v-deformation>
+        </div>
+    </v-deformation>
   </div>
 </template>
 <script>
 import draggable from 'vuedraggable'
 import 'github-markdown-css'
 import VueMarkdown from 'vue-markdown'
-import deformation from '../../components/deformation.vue'
+// import deformation from '../../components/deformation.vue'
 import tree from './tree.vue'
 import terminal from './terminal.vue'
+import VueDraggableResizable from 'vue-draggable-resizable'
+import 'vue-draggable-resizable/dist/VueDraggableResizable.css'
 require('codemirror/mode/javascript/javascript')
 require('codemirror/mode/vue/vue')
 require('codemirror/addon/hint/show-hint.js')
@@ -97,7 +100,7 @@ export default {
       deformationPopup: null,
       content: '',
       asideW: 240,
-      terminalH: 0,
+      terminalH: 300,
       editorConfig: {
         mode: 'javascript',
         lineNumbers: true,
@@ -125,7 +128,7 @@ export default {
     'v-terminal': terminal,
     'v-draggable': draggable,
     'v-vuemarkdown': VueMarkdown,
-    'v-deformation': deformation
+    'v-deformation': VueDraggableResizable
   },
   methods: {
     onTerminalResizing (left, top, width, height) {
@@ -430,7 +433,7 @@ export default {
     })
     this.$bus.$off('toggleTerminal').$on('toggleTerminal', (node, item) => {
       this.terminalShow = !this.terminalShow
-      this.terminalShow && this.$refs.terminal.reInit()
+      // this.terminalShow && this.$refs.terminal.reInit()
     })
   }
 }
@@ -442,20 +445,65 @@ export default {
 // .fl1{
 //   flex: 1;
 // }
+$handleW: 5px;
+.vdr{
+  border: 0;
+  .handle{
+    display: none!important;
+  }
+  .handle-tm,
+  .handle-bm,
+  .handle-ml,
+  .handle-mr{
+    display: inline-block!important;
+    background: transparent;
+    z-index: 2050;
+    border: 0;
+  }
+
+  .handle-tm{
+    top: 0;
+    bottom: auto;
+    left: 0;
+    height: $handleW;
+    width: 100%;
+  }
+  .handle-bm{
+    top: auto;
+    bottom: 0;
+    left: 0;
+    height: $handleW;
+    width: 100%;
+  }
+  .handle-ml{
+    left: 0;
+    top: 0;
+    right: auto;
+    width: $handleW;
+    height: 100%;
+  }
+  .handle-mr{
+    left: auto;
+    top: 0;
+    right: 0;
+    width: $handleW;
+    height: 100%;
+  }
+}
 .terminal-box{
   position: absolute;
   top: auto!important;
   bottom: 0;
   right: 0;
-  z-index: 999;
+  z-index: 2040!important;
+  left: 0!important;
   width: auto!important;
   outline: none;
-  border-top: 1px solid #3f3f3f;
-  border-left: 1px solid #3f3f3f;
-  background-color: #111;
+  background-color: #0f0f0f;
   cursor: auto!important;
 }
 .editor-box {
+  z-index: 2030!important;
   .name-list{
     height: 24px;
     width: 100%;
