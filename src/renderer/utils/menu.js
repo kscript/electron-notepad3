@@ -7,17 +7,17 @@ export const commonMenu = function () {
       role: 'help',
       label: '帮助',
       submenu: [
-        {
-          label: 'Electron文档',
-          click () {
-            shell.openExternal('https://electronjs.org')
-          }
-        },
         { type: 'separator' },
         {
           label: '关于',
           click () {
             Bus.$emit('about')
+          }
+        },
+        {
+          label: 'Electron文档',
+          click () {
+            shell.openExternal('https://electronjs.org')
           }
         },
         {
@@ -90,7 +90,6 @@ export const editorMenu = function () {
       submenu: [
         { role: 'reload', label: '重载' },
         { role: 'forcereload', label: '硬性重载' },
-        { role: 'toggledevtools', label: '开发者工具', accelerator: 'F12' },
         { type: 'separator' },
         { role: 'resetzoom', label: '重置' },
         { role: 'zoomin', label: '放大' },
@@ -103,6 +102,7 @@ export const editorMenu = function () {
     {
       label: '调试',
       submenu: [
+        { role: 'toggledevtools', label: '开发者工具', accelerator: 'F12' },
         {
           label: '终端',
           accelerator: 'CommandOrControl + T',

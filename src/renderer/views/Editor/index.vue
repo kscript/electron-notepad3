@@ -495,7 +495,7 @@ $handleW: 5px;
   top: auto!important;
   bottom: 0;
   right: 0;
-  z-index: 2040!important;
+  z-index: 1540!important;
   left: 0!important;
   width: auto!important;
   outline: none;
