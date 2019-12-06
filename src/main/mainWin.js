@@ -19,7 +19,8 @@ export const createWindow = () => {
     width: 1000,
     webPreferences: {
       // webSecurity: false,
-      devTools: true
+      devTools: true,
+      nodeIntegration: true // add this
     }
     // frame: false,
     // titleBarStyle: 'hidden',
