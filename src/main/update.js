@@ -1,5 +1,6 @@
 import { autoUpdater } from 'electron-updater'
 import { ipcMain } from 'electron'
+import path from 'path'
 let windowInstance = null
 export const updateHandle = (mainWindow) => {
   if (windowInstance) {
@@ -20,27 +21,20 @@ export const updateHandle = (mainWindow) => {
   }
   autoUpdater.autoDownload = false
   autoUpdater.currentVersion = config.version
+  if (process.env.NODE_ENV !== 'development') {
+    autoUpdater.updateConfigPath = path.join(__dirname, '../../../app-update.yml')
+  }
   // 自己搭建服务器更新
   // autoUpdater.setFeedURL(config.build.publish[0].url)
 
   // 使用github托管
-  // autoUpdater.setFeedURL({
-  //   provider: 'github',
-  //   owner: 'kscript',
-  //   host: 'api.github.com',
-  //   repo: 'electron-notepad3',
-  //   token: '6767d8933c4490fdcbb95971f28331a23ef779b4',
-  //   vPrefixedTagName: false,
-  //   releaseType: 'release',
-  //   publishAutoUpdate: true
-  // })
-  autoUpdater.setFeedURL(config.build.publish[1])
+  autoUpdater.setFeedURL(config.build.publish[0])
 
   autoUpdater.on('error', (event, error) => {
     sendUpdateMessage('error', event, error)
   })
   autoUpdater.on('checking-for-update', (info) => {
-    sendUpdateMessage('checking', info)
+    sendUpdateMessage('checking', info, [__dirname])
   })
   autoUpdater.on('update-available', (info) => {
     sendUpdateMessage('updateAva', info)
@@ -65,7 +59,6 @@ export const updateHandle = (mainWindow) => {
   autoUpdater.on('update-downloaded', (info) => {
     sendUpdateMessage('updateDownloaded', info)
   })
-
   // 由用户来触发的行为
   // 检查版本更新
   ipcMain.on('checkForUpdate', () => {

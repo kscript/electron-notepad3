@@ -1,6 +1,6 @@
 {
   "name": "electron-notepad3",
-  "version": "0.6.1",
+  "version": "0.6.0",
   "author": "kscript <1258@live.cn>",
   "description": "An electron-vue project",
   "license": "Apache",
@@ -28,22 +28,16 @@
     "directories": {
       "output": "build"
     },
-    "publish": [
-      {
-        "provider": "generic",
-        "url": "http://web.cn/autoupdate/"
-      },
-      {
-        "provider": "github",
-        "owner": "kscript",
-        "host": "api.github.com",
-        "repo": "electron-notepad3",
-        "token": "6767d8933c4490fdcbb95971f28331a23ef779b4",
-        "vPrefixedTagName": false,
-        "releaseType": "release",
-        "publishAutoUpdate": true
-      }
-    ],
+    "publish": [{
+      "provider": "github",
+      "owner": "kscript",
+      "host": "api.github.com",
+      "repo": "electron-notepad3",
+      "token": "37663b1919442aee8628d52e27d7c61a91d5d6c9",
+      "vPrefixedTagName": false,
+      "releaseType": "release",
+      "publishAutoUpdate": true
+    }],
     "files": [
       "dist/electron/**/*"
     ],
@@ -120,11 +114,11 @@
     "css-loader": "^0.28.11",
     "del": "^3.0.0",
     "devtron": "^1.4.0",
-    "electron": "^2.0.4",
-    "electron-builder": "^20.19.2",
+    "electron": "^8.2.3",
+    "electron-builder": "^22.4.1",
     "electron-debug": "^1.5.0",
     "electron-devtools-installer": "^2.2.4",
-    "electron-updater": "^3.1.5",
+    "electron-updater": "^4.2.5",
     "element-ui": "^2.8.2",
     "eslint": "^4.19.1",
     "eslint-config-standard": "^11.0.0",
@@ -152,7 +146,7 @@
     "mocha": "^5.2.0",
     "multispinner": "^0.2.1",
     "node-loader": "^0.6.0",
-    "node-sass": "^4.9.2",
+    "node-sass": "^4.13.1",
     "require-dir": "^1.0.0",
     "sass-loader": "^7.0.3",
     "spectron": "^3.8.0",
@@ -160,6 +154,7 @@
     "url-loader": "^1.0.1",
     "vue-codemirror-lite": "^1.0.4",
     "vue-draggable-resizable": "^2.0.0-rc2",
+    "vue-electron": "^1.0.6",
     "vue-html-loader": "^1.2.4",
     "vue-jstree": "^2.1.6",
     "vue-loader": "^15.2.4",

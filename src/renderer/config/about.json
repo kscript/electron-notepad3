@@ -1,9 +1,9 @@
 {
   "name": "electron-notepad3",
-  "version": "0.6.1",
-  "electron": "2.0.18",
+  "version": "0.6.0",
+  "electron": "8.2.3",
   "author": "kscript <1258@live.cn>",
   "license": "Apache",
   "home": "https://github.com/kscript/",
-  "time": "2019-5-29 14:36:16"
+  "time": "2020-4-17 22:52:04"
 }

@@ -11,7 +11,9 @@ const about = (cb) => {
     home: config.home,
     time: new Date().toLocaleString()
   }
-  fs.writeFileSync('src/renderer/config/about.json', JSON.stringify(result, null, 2))
+  try {
+    fs.writeFileSync('src/renderer/config/about.json', JSON.stringify(result, null, 2))
+  } catch(e) {}
   cb && cb()
 }
 about()
